@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getPostBySlug, getAllPosts } from "@/lib/posts";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import BentoItem from "@/components/ui/scrapbook-bento-grid";
 
 // Generate static params for all posts
 export async function generateStaticParams() {
@@ -19,84 +18,88 @@ export default async function PostPage({
 
   if (!post) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Header activeNav="/posts" />
-        <main className="flex-1 max-w-4xl mx-auto px-4 py-8">
-          <p>抱歉，找不到这篇文章。</p>
-          <Link href="/posts" className="text-yellow-600 hover:underline mt-4 block">
-            返回文章列表
+      <div className="min-h-screen w-full flex flex-col items-center justify-center py-16 px-4 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-800">
+        <BentoItem className="item-2" rotation="2deg">
+          <h2 className="text-2xl font-bold mb-4">文章不存在</h2>
+          <p className="opacity-70">抱歉，找不到这篇文章。</p>
+          <Link href="/posts" className="text-blue-600 hover:underline mt-4 block">
+            ← 返回文章列表
           </Link>
-        </main>
-        <Footer />
+        </BentoItem>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header activeNav="/posts" />
+    <div className="min-h-screen w-full flex flex-col items-center justify-center py-16 px-4 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-800">
+      <div className="w-full max-w-4xl">
+        {/* Back Link */}
+        <Link
+          href="/posts"
+          className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline mb-8"
+        >
+          <span>←</span>
+          <span>返回文章列表</span>
+        </Link>
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-8">
-        <article className="bg-card rounded-xl border-2 border-yellow-600/50 p-8">
-          <header className="mb-8 pb-6 border-b border-yellow-600/30">
-            <h1 className="text-3xl font-bold text-card-foreground mb-4">
-              {post.title}
-            </h1>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <span>📅</span>
-                <span>{post.date}</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <span>⏱️</span>
-                <span>{post.readingTime}</span>
-              </span>
-              {post.tags && (
-                <div className="flex gap-2">
-                  {post.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-0.5 bg-secondary rounded text-xs"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
+        {/* Article Card */}
+        <BentoItem className="item-1" rotation="-1deg">
+          <article className="p-8">
+            {/* Header */}
+            <header className="mb-8 pb-6 border-b border-gray-200/50 dark:border-white/10">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+                {post.title}
+              </h1>
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                <span className="flex items-center gap-1">
+                  <span>📅</span>
+                  <span>{post.date}</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <span>⏱️</span>
+                  <span>{post.readingTime}</span>
+                </span>
+                {post.tags && post.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {post.tags.map((tag) => (
+                      <Link
+                        key={tag}
+                        href={`/tags/${encodeURIComponent(tag)}`}
+                        className="px-3 py-1 rounded-full bg-white/50 dark:bg-black/50 backdrop-blur-sm text-xs hover:bg-white/70 dark:hover:bg-black/70 transition-colors"
+                      >
+                        {tag}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </header>
+
+            {/* Content */}
+            <div className="prose prose-lg max-w-none">
+              <div
+                className="text-gray-700 dark:text-gray-300 leading-relaxed space-y-4"
+                dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
+              />
             </div>
-          </header>
-
-          <div className="prose prose-sm max-w-none text-card-foreground">
-            <div
-              dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
-            />
-          </div>
-        </article>
-
-        <div className="mt-8">
-          <Link
-            href="/posts"
-            className="inline-flex items-center gap-2 text-yellow-600 hover:text-yellow-500 transition-colors"
-          >
-            <span>←</span>
-            <span>返回文章列表</span>
-          </Link>
-        </div>
-      </main>
-
-      <Footer />
+          </article>
+        </BentoItem>
+      </div>
     </div>
   );
 }
 
 function formatContent(content: string): string {
   return content
-    .replace(/^### (.+)$/gm, '<h3 class="text-lg font-bold mt-6 mb-3">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold mt-8 mb-4 border-b border-yellow-600/30 pb-2">$1</h2>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold">$1</strong>')
-    .replace(/```(\w*)\n([\s\S]+?)```/g, '<pre class="bg-neutral-900 text-neutral-100 p-4 rounded-lg overflow-x-auto my-4"><code>$2</code></pre>')
-    .replace(/`(.+?)`/g, '<code class="bg-neutral-200 dark:bg-neutral-700 px-1 py-0.5 rounded text-sm">$1</code>')
-    .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc">$1</li>')
-    .replace(/\n\n/g, '</p><p class="my-4">')
+    .replace(/^### (.+)$/gm, '<h3 class="text-xl font-bold mt-8 mb-4 text-gray-800 dark:text-gray-200">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 class="text-2xl font-bold mt-10 mb-6 pb-2 border-b border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200">$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1 class="text-3xl font-bold mt-12 mb-6 text-gray-900 dark:text-gray-100">$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-gray-900 dark:text-gray-100">$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
+    .replace(/```(\w*)\n([\s\S]+?)```/g, '<pre class="bg-neutral-900 text-neutral-100 p-6 rounded-xl overflow-x-auto my-6 text-sm"><code>$2</code></pre>')
+    .replace(/`(.+?)`/g, '<code class="bg-neutral-200 dark:bg-neutral-700 px-2 py-1 rounded text-sm font-mono text-red-600 dark:text-red-400">$1</code>')
+    .replace(/^- (.+)$/gm, '<li class="ml-6 list-disc text-gray-700 dark:text-gray-300 mb-2">$1</li>')
+    .replace(/^\d+\. (.+)$/gm, '<li class="ml-6 list-decimal text-gray-700 dark:text-gray-300 mb-2">$1</li>')
+    .replace(/\n\n/g, '</p><p class="my-4 text-gray-700 dark:text-gray-300">')
     .replace(/\n/g, '<br/>');
 }
