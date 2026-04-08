@@ -90,6 +90,23 @@ export default async function PostPage({
 }
 
 function formatContent(content: string): string {
+  // 处理表格（必须在换行处理之前）
+  content = content.replace(
+    /\|(.+)\|\n\|[-:\s|]+\|\n((?:\|.+\|\n?)+)/g,
+    (match, header, body) => {
+      const headerCells = header.split('|').map((cell: string) => cell.trim()).filter(Boolean);
+      const rows = body.trim().split('\n').map((row: string) =>
+        row.split('|').map((cell: string) => cell.trim()).filter(Boolean)
+      );
+
+      const thead = `<thead class="bg-neutral-100 dark:bg-neutral-800"><tr>${headerCells.map((cell: string) => `<th class="px-4 py-2 text-left font-semibold border border-neutral-300 dark:border-neutral-600">${cell}</th>`).join('')}</tr></thead>`;
+
+      const tbody = `<tbody>${rows.map((row: string[]) => `<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">${row.map((cell: string) => `<td class="px-4 py-2 border border-neutral-200 dark:border-neutral-700">${cell}</td>`).join('')}</tr>`).join('')}</tbody>`;
+
+      return `<table class="w-full border-collapse border border-neutral-300 dark:border-neutral-600 rounded-lg overflow-hidden my-6 text-sm">${thead}${tbody}</table>`;
+    }
+  );
+
   return content
     .replace(/^### (.+)$/gm, '<h3 class="text-xl font-bold mt-8 mb-4 text-gray-800 dark:text-gray-200">$1</h3>')
     .replace(/^## (.+)$/gm, '<h2 class="text-2xl font-bold mt-10 mb-6 pb-2 border-b border-gray-200 dark:border-white/10 text-gray-800 dark:text-gray-200">$1</h2>')
