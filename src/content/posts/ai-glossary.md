@@ -1,18 +1,109 @@
 ---
-title: "Claude Code 配置系统全览"
+title: "AI术语与Claude Code配置指南"
 date: 2026-04-08
-tags: ["Claude Code", "工具指南"]
-description: "详细介绍 rules、hooks、agents 等核心概念及其作用"
+tags: ["AI术语", "Claude Code", "工具指南"]
+description: "记录AI领域常见术语，并详细介绍Claude Code配置体系"
 draft: false
 ---
 
-# Claude Code 配置系统全览
+# AI术语与Claude Code配置指南
 
-> 想要高效使用 Claude Code？先了解它的配置体系。这篇文章详细介绍 rules、hooks、agents 等核心概念及其作用。
+> 本文分为两部分：AI领域常见术语详解 + Claude Code配置系统全览
 
 ---
 
-## 1. rules/ — 工作规则目录
+## 第一部分：AI术语笔记
+
+记录 AI 领域常见的英文术语和缩写，用简洁的语言解释概念。
+
+---
+
+### 核心概念
+
+#### LLM (Large Language Model)
+
+**大型语言模型**。一种基于深度学习的神经网络，通过海量文本训练来预测下一个 token（词元）。
+
+常见 LLM：GPT、Claude、Llama、DeepSeek 等。
+
+#### Token
+
+**词元**。LLM 处理文本的最小单位。英文中 1 token ≈ 1 个单词；中文中 1 token ≈ 1-2 个汉字。
+
+#### Context Window
+
+**上下文窗口**。LLM 一次能处理的 token 总数上限，包括输入和输出。
+
+#### Temperature
+
+**温度参数**。控制输出随机性的参数：
+- `temperature = 0`：输出几乎确定
+- `temperature = 0.7~1.0`：输出更多样
+
+#### Hallucination
+
+**幻觉**。LLM 生成看似合理但实际错误或不存在的信息。
+
+---
+
+### RAG 相关
+
+#### RAG (Retrieval Augmented Generation)
+
+**检索增强生成**。一种让 LLM 回答基于私有知识的技术。
+
+#### Vector Database
+
+**向量数据库**。存储文本嵌入向量的数据库，通过语义相似度搜索内容。
+
+#### Embedding
+
+**嵌入/向量化**。把文本转换成数字向量的过程，相似文本有相似的向量。
+
+---
+
+### Agent 相关
+
+#### AI Agent
+
+**AI 代理/智能体**。能够自主规划、使用工具，完成复杂任务的 AI 系统。
+
+#### MCP (Model Context Protocol)
+
+**模型上下文协议**。Anthropic 提出的标准协议，让 AI 能安全地连接外部数据源和工具。
+
+#### Tool Use
+
+**工具调用**。LLM 通过生成特殊指令来调用外部工具，扩展其能力边界。
+
+---
+
+### Claude Code 相关（基础）
+
+| 概念 | 说明 |
+|------|------|
+| **Skill** | 经过经验优化好的提示词文档，用于特定任务的执行代理 |
+| **Hooks** | 自动化机制，在特定生命周期事件触发时自动执行 |
+| **Rules** | 提示词规则文件，定义工作流程和最佳实践 |
+| **CLAUDE.md** | 项目级说明文件，供 AI 在该项目中快速了解上下文 |
+
+### 其他常见术语
+
+| 术语 | 全称 | 解释 |
+|------|------|------|
+| **API** | Application Programming Interface | 程序接口 |
+| **Streaming** | — | 流式输出，边生成边显示 |
+| **Benchmark** | — | 基准测试，评估模型性能的标准 |
+
+---
+
+## 第二部分：Claude Code 配置系统详解
+
+下面详细介绍 Claude Code 的配置体系，包括 rules、hooks、agents 等核心概念。
+
+---
+
+### 1. rules/ — 工作规则目录
 
 位置：`C:\Users\li\.claude\rules\`
 
@@ -32,13 +123,13 @@ rules 目录是 Claude Code 的**规则中心**，定义了如何工作的规范
 
 ---
 
-## 2. hooks.md — 自动化钩子
+### 2. hooks.md — 自动化钩子
 
 位置：`C:\Users\li\.claude\rules\hooks.md`
 
 Hooks 会在特定时机**自动执行**，无需调用。
 
-### 三种类型
+#### 三种类型
 
 | Hook | 触发时机 | 用途 |
 |------|----------|------|
@@ -46,7 +137,7 @@ Hooks 会在特定时机**自动执行**，无需调用。
 | `PostToolUse` | 工具执行后 | 自动格式化、检查结果 |
 | `Stop` | Session 结束时 | 最终验证、清理 |
 
-### 示例
+#### 示例
 
 ```markdown
 PreToolUse: Edit
@@ -54,7 +145,7 @@ PreToolUse: Edit
   action: fail with "File must be read before editing"
 ```
 
-### 使用场景
+#### 使用场景
 
 - **PreToolUse**: 防止误操作（比如未读取文件就编辑）
 - **PostToolUse**: 提交前自动格式化代码
@@ -62,7 +153,7 @@ PreToolUse: Edit
 
 ---
 
-## 3. agents/ — Agent 定义目录
+### 3. agents/ — Agent 定义目录
 
 位置：`C:\Users\li\.claude\agents\`
 
@@ -71,7 +162,7 @@ PreToolUse: Edit
 - 它有哪些工具可用
 - 什么时候适合用它
 
-### 内置 Agent 类型
+#### 内置 Agent 类型
 
 | Agent | 用途 |
 |-------|------|
@@ -85,12 +176,12 @@ PreToolUse: Edit
 | `refactor-cleaner` | 死代码清理 |
 | `doc-updater` | 文档更新 |
 
-### 两种触发方式
+#### 两种触发方式
 
 1. **Immediate Agent Usage** — 自动触发，不需要提醒
 2. **主动调用** — 需要你或 Claude Code 明确调用
 
-### 使用示例
+#### 使用示例
 
 ```
 用户："帮我实现用户认证系统"
@@ -100,7 +191,7 @@ PreToolUse: Edit
 
 ---
 
-## 4. settings.json — 主配置
+### 4. settings.json — 主配置
 
 位置：`C:\Users\li\.claude\settings.json`
 
@@ -117,13 +208,13 @@ PreToolUse: Edit
 
 ---
 
-## 5. plans/ — 计划文件目录
+### 5. plans/ — 计划文件目录
 
 位置：`C:\Users\li\.claude\plans\`
 
 当 Claude Code 进入 **Plan Mode** 时，工作计划会保存到这里。
 
-### 使用方式
+#### 使用方式
 
 ```bash
 /plan  # 进入计划模式
@@ -138,13 +229,13 @@ PreToolUse: Edit
 
 ---
 
-## 6. memory/ — 记忆系统
+### 6. memory/ — 记忆系统
 
 位置：`C:\Users\li\.claude\projects\<项目名>\memory\`
 
 跨对话的持久化记忆系统。
 
-### 记忆类型
+#### 记忆类型
 
 | 类型 | 用途 |
 |------|------|
@@ -153,7 +244,7 @@ PreToolUse: Edit
 | `project` | 项目上下文、目标、截止时间 |
 | `reference` | 外部资源位置（Linear、Grafana 等） |
 
-### 工作方式
+#### 工作方式
 
 ```
 Step 1: 将记忆写入 memory/ 目录下的 .md 文件
